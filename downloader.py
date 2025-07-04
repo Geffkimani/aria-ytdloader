@@ -10,8 +10,12 @@ from ttkbootstrap import Style
 from ttkbootstrap.constants import *
 from ttkbootstrap import Frame, Label, Entry, Button, Progressbar, Checkbutton, BooleanVar, Text, Scrollbar
 
+import atexit
+
 HISTORY_FILE = "history.json"
 ARIA2_SESSION = "aria2.session"
+ARIA2C_PATH = "./assets/aria2c"
+ARIA2C_RPC_PORT = "6800"
 
 class DownloaderApp:
     def __init__(self, root):
@@ -23,7 +27,11 @@ class DownloaderApp:
         self.download_dir = os.getcwd()
         self.download_threads = []
         self.history = []
+        self.aria2c_process = None
+
         self.load_history()
+        self.start_aria2c()
+        atexit.register(self.stop_aria2c)
 
         self.create_widgets()
 
@@ -47,7 +55,7 @@ class DownloaderApp:
 
         Button(main_frame, text="Select Download Folder", command=self.select_folder).pack(anchor=W, pady=(5, 10))
         Button(main_frame, text="Download", command=self.download).pack(anchor=W)
-        Button(main_frame, text="Close", command=self.root.quit).pack(anchor=W, pady=(5, 10))
+        Button(main_frame, text="Close", command=self.quit_app).pack(anchor=W, pady=(5, 10))
 
         self.progress = Progressbar(main_frame, length=300, mode='determinate')
         self.progress.pack(fill=X, pady=(5, 5))
@@ -67,6 +75,34 @@ class DownloaderApp:
         Button(main_frame, text="Delete History", command=self.clear_history).pack(anchor=W, pady=5)
 
         self.update_history_box()
+
+    def start_aria2c(self):
+        if not os.path.exists(ARIA2C_PATH):
+            messagebox.showerror("aria2c Missing", "aria2c binary not found in ./assets")
+            self.root.quit()
+            return
+
+        cmd = [
+            ARIA2C_PATH,
+            "--enable-rpc",
+            f"--rpc-listen-port={ARIA2C_RPC_PORT}",
+            "--continue=true",
+            f"--save-session={ARIA2_SESSION}",
+            f"--input-file={ARIA2_SESSION}",
+            "--max-connection-per-server=16",
+            "--split=16",
+            "--min-split-size=1M"
+        ]
+
+        self.aria2c_process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def stop_aria2c(self):
+        if self.aria2c_process:
+            self.aria2c_process.terminate()
+            try:
+                self.aria2c_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.aria2c_process.kill()
 
     def on_drop(self, event):
         dropped = event.data.strip('{}')
@@ -93,7 +129,7 @@ class DownloaderApp:
         cmd = [
             "./assets/yt-dlp", url,
             "-f", fmt,
-            "--external-downloader", "./assets/aria2c",
+            "--external-downloader", "aria2c",
             "--external-downloader-args", "-x 16 -k 1M",
             "-o", output,
             "--write-info-json",
@@ -145,6 +181,10 @@ class DownloaderApp:
             self.history.clear()
             self.save_history()
             self.update_history_box()
+
+    def quit_app(self):
+        self.stop_aria2c()
+        self.root.quit()
 
 if __name__ == "__main__":
     root = TkinterDnD.Tk()
