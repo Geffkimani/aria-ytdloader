@@ -1,122 +1,146 @@
 import os
 import json
+import re
 import subprocess
 import threading
-import time
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Text, BooleanVar, END, NORMAL, DISABLED
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from ttkbootstrap import Style
-from ttkbootstrap.constants import *
-from ttkbootstrap import Frame, Label, Entry, Button, Progressbar, Checkbutton, BooleanVar, Text, Scrollbar
-
-import atexit
+from ttkbootstrap.widgets import Frame, Label, Entry, Button, Progressbar, Checkbutton, Scrollbar
 
 HISTORY_FILE = "history.json"
-ARIA2_SESSION = "aria2.session"
-ARIA2C_PATH = "./assets/aria2c"
-ARIA2C_RPC_PORT = "6800"
+CONFIG_FILE = "settings.json"
 
 class DownloaderApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("YouTube Downloader")
-        self.root.geometry("700x500")
+        self.root.title("yt-downloader")
+        self.root.geometry("800x600")
+        self.root.resizable(True, True)
         self.style = Style("darkly")
 
         self.download_dir = os.getcwd()
-        self.download_threads = []
         self.history = []
-        self.aria2c_process = None
-
         self.load_history()
-        self.start_aria2c()
-        atexit.register(self.stop_aria2c)
+        self.load_config()
 
+        self.threads = []
         self.create_widgets()
 
     def create_widgets(self):
-        main_frame = Frame(self.root, padding=10)
-        main_frame.pack(fill=BOTH, expand=True)
+        wrapper = Frame(self.root, padding=15)
+        wrapper.pack(fill="both", expand=True)
 
-        Label(main_frame, text="Enter or Drop YouTube URL:").pack(anchor=W)
+        header_frame = Frame(wrapper)
+        header_frame.pack(fill="x", pady=(0, 5))
 
-        self.url_entry = Entry(main_frame, width=100)
-        self.url_entry.pack(fill=X, pady=5)
+        Label(header_frame, text="YouTube URL").pack(side="left")
+        Button(header_frame, text="Close", command=self.root.quit).pack(side="right")
+
+        url_frame = Frame(wrapper)
+        url_frame.pack(fill="x", pady=(0, 10))
+
+        self.url_entry = Entry(url_frame, width=100)
+        self.url_entry.pack(side="left", fill="x", expand=True)
         self.url_entry.drop_target_register(DND_FILES)
-        self.url_entry.dnd_bind('<<Drop>>', self.on_drop)
+        self.url_entry.dnd_bind("<<Drop>>", self.on_drop)
 
-        right_click_menu = tk.Menu(self.root, tearoff=0)
-        right_click_menu.add_command(label="Paste", command=self.paste_url)
-        self.url_entry.bind("<Button-3>", lambda e: right_click_menu.tk_popup(e.x_root, e.y_root))
+        self.download_button = Button(url_frame, text="Download", command=self.download)
+        self.download_button.pack(side="left", padx=10)
 
+        # Right-click context menu
+        menu = self.context_menu = self.create_context_menu()
+        self.url_entry.bind("<Button-3>", lambda e: menu.tk_popup(e.x_root, e.y_root))
+
+        # Quality checkbox
         self.quality_var = BooleanVar(value=False)
-        Checkbutton(main_frame, text="Download 1080p (default is 720p)", variable=self.quality_var).pack(anchor=W)
+        self.quality_checkbox = Checkbutton(wrapper, text="Download in 1080p (default 720p)", variable=self.quality_var)
+        self.quality_checkbox.pack(anchor="w", pady=(0, 10))
 
-        Button(main_frame, text="Select Download Folder", command=self.select_folder).pack(anchor=W, pady=(5, 10))
-        Button(main_frame, text="Download", command=self.download).pack(anchor=W)
-        Button(main_frame, text="Close", command=self.quit_app).pack(anchor=W, pady=(5, 10))
+        # Folder select + download row
+        control_frame = Frame(wrapper)
+        control_frame.pack(fill="x", pady=(0, 15))
 
-        self.progress = Progressbar(main_frame, length=300, mode='determinate')
-        self.progress.pack(fill=X, pady=(5, 5))
+        self.select_folder_button = Button(control_frame, text="Select Folder", command=self.select_folder)
+        self.select_folder_button.pack(side="left")
 
-        Label(main_frame, text="Download History:").pack(anchor=W)
+        self.clear_history_button = Button(wrapper, text="Clear History", command=self.clear_history)
+        self.clear_history_button.pack(anchor="e", pady=5)
 
-        hist_frame = Frame(main_frame)
-        hist_frame.pack(fill=BOTH, expand=True)
+        # Progress bar
+        progress_frame = Frame(wrapper)
+        progress_frame.pack(fill="x", pady=(0, 15))
 
-        self.history_box = Text(hist_frame, height=10, wrap="none")
-        self.history_box.pack(side=LEFT, fill=BOTH, expand=True)
+        self.progress = Progressbar(progress_frame, length=100, mode="determinate")
+        self.progress.pack(side="left", fill="x", expand=True)
+
+        self.percentage_var = tk.StringVar()
+        self.percentage_label = Label(progress_frame, textvariable=self.percentage_var)
+        self.percentage_label.pack(side="left", padx=10)
+
+        self.status_var = tk.StringVar()
+        self.status_label = Label(wrapper, textvariable=self.status_var)
+        self.status_label.pack(anchor="w", pady=(0, 5))
+
+        self.speed_var = tk.StringVar()
+        self.speed_label = Label(wrapper, textvariable=self.speed_var)
+        self.speed_label.pack(anchor="w")
+
+        self.size_var = tk.StringVar()
+        self.size_label = Label(wrapper, textvariable=self.size_var)
+        self.size_label.pack(anchor="w")
+
+        # History label and clear button
+        history_header_frame = Frame(wrapper)
+        history_header_frame.pack(fill="x", pady=(0, 5))
+        Label(history_header_frame, text="Download History").pack(side="left")
+        self.clear_history_button = Button(history_header_frame, text="Clear History", command=self.clear_history)
+        self.clear_history_button.pack(side="right")
+
+        # History box with scrollbar
+        hist_frame = Frame(wrapper)
+        hist_frame.pack(fill="both", expand=True)
+
+        self.history_box = Text(hist_frame, wrap="none", height=10)
+        self.history_box.pack(side="left", fill="both", expand=True)
 
         scrollbar = Scrollbar(hist_frame, command=self.history_box.yview)
-        scrollbar.pack(side=RIGHT, fill=Y)
+        scrollbar.pack(side="right", fill="y")
         self.history_box.config(yscrollcommand=scrollbar.set)
-
-        Button(main_frame, text="Delete History", command=self.clear_history).pack(anchor=W, pady=5)
 
         self.update_history_box()
 
-    def start_aria2c(self):
-        if not os.path.exists(ARIA2C_PATH):
-            messagebox.showerror("aria2c Missing", "aria2c binary not found in ./assets")
-            self.root.quit()
-            return
+    def _set_ui_state(self, state):
+        self.url_entry.config(state=state)
+        self.download_button.config(state=state)
+        self.quality_checkbox.config(state=state)
+        self.select_folder_button.config(state=state)
+        self.clear_history_button.config(state=state)
 
-        cmd = [
-            ARIA2C_PATH,
-            "--enable-rpc",
-            f"--rpc-listen-port={ARIA2C_RPC_PORT}",
-            "--continue=true",
-            f"--save-session={ARIA2_SESSION}",
-            f"--input-file={ARIA2_SESSION}",
-            "--max-connection-per-server=16",
-            "--split=16",
-            "--min-split-size=1M"
-        ]
-
-        self.aria2c_process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    def stop_aria2c(self):
-        if self.aria2c_process:
-            self.aria2c_process.terminate()
-            try:
-                self.aria2c_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                self.aria2c_process.kill()
+    def create_context_menu(self):
+        menu = self.context_menu = tk.Menu(self.root, tearoff=0)
+        menu.add_command(label="Paste", command=self.paste_url)
+        return menu
 
     def on_drop(self, event):
-        dropped = event.data.strip('{}')
+        url = event.data.strip("{}")
         self.url_entry.delete(0, END)
-        self.url_entry.insert(0, dropped)
+        self.url_entry.insert(0, url)
 
     def paste_url(self):
-        self.url_entry.delete(0, END)
-        self.url_entry.insert(0, self.root.clipboard_get())
+        try:
+            clipboard = self.root.clipboard_get()
+            self.url_entry.delete(0, END)
+            self.url_entry.insert(0, clipboard)
+        except:
+            pass
 
     def select_folder(self):
         path = filedialog.askdirectory()
         if path:
             self.download_dir = path
+            self.save_config()
 
     def download(self):
         url = self.url_entry.get().strip()
@@ -129,62 +153,114 @@ class DownloaderApp:
         cmd = [
             "./assets/yt-dlp", url,
             "-f", fmt,
-            "--external-downloader", "aria2c",
+            "--external-downloader", "./assets/aria2c",
             "--external-downloader-args", "-x 16 -k 1M",
             "-o", output,
             "--write-info-json",
             "--no-mtime"
         ]
 
-        thread = threading.Thread(target=self.run_download, args=(cmd, url))
+        self._set_ui_state(DISABLED)
+        thread = threading.Thread(target=self.run_download, args=(cmd,))
         thread.start()
-        self.download_threads.append(thread)
+        self.threads.append(thread)
 
-    def run_download(self, cmd, url):
-        self.progress.config(mode="indeterminate")
-        self.progress.start(10)
+    def run_download(self, cmd):
+        self.progress.config(mode="determinate", value=0)
+        self.percentage_var.set("0%")
+        self.status_var.set("Downloading...")
+        self.speed_var.set("")
+        self.size_var.set("")
 
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
         title = None
-        for line in process.stdout:
-            print(line.strip())
-            if '[download] Destination:' in line:
-                title = line.split('Destination:')[1].strip()
+        current_video_index = 0
+        total_videos = 0
 
-        self.progress.stop()
-        self.progress.config(mode="determinate", value=100)
+        for line in iter(process.stdout.readline, ''):
+            print(line.strip())
+
+            # Detect playlist video start
+            playlist_match = re.search(r"^\[download\] Downloading video (\d+) of (\d+)", line)
+            if playlist_match:
+                current_video_index = int(playlist_match.group(1))
+                total_videos = int(playlist_match.group(2))
+                self.status_var.set(f"Downloading video {current_video_index}/{total_videos}...")
+                self.progress.config(value=0) # Reset progress for new video
+                self.percentage_var.set("0%")
+                self.speed_var.set("")
+                self.size_var.set("")
+                self.root.update_idletasks()
+
+            # Detect video destination (title)
+            destination_match = re.search(r"^\[download\] Destination: (.+)", line)
+            if destination_match:
+                title = destination_match.group(1).strip()
+                if total_videos > 0:
+                    self.status_var.set(f"Downloading video {current_video_index}/{total_videos}: {title}")
+                else:
+                    self.status_var.set(f"Downloading: {title}")
+                self.root.update_idletasks()
+
+            # Look for progress information from yt-dlp (which includes aria2c output)
+            progress_match = re.search(r"^\[download\]\s+(\d+\.\d+)% of (\d+\.\d+[KMGT]?i?B) at (\d+\.\d+[KMGT]?i?B/s)", line)
+            if progress_match:
+                percentage = float(progress_match.group(1))
+                size = progress_match.group(2)
+                speed = progress_match.group(3)
+
+                self.progress.config(value=percentage)
+                self.percentage_var.set(f"{percentage:.1f}%")
+                self.speed_var.set(f"Speed: {speed}")
+                self.size_var.set(f"Size: {size}")
+                self.root.update_idletasks()
+
+        process.wait()
+        self.progress.config(value=100)
+        self.percentage_var.set("100%")
+        if process.returncode == 0:
+            self.status_var.set("Download complete!")
+        else:
+            self.status_var.set("Error: Download failed")
 
         if title:
             self.history.append(title)
             self.save_history()
             self.update_history_box()
-
-    def update_history_box(self):
-        self.history_box.config(state=NORMAL)
-        self.history_box.delete(1.0, END)
-        for item in self.history:
-            self.history_box.insert(END, f"{item}\n")
-        self.history_box.config(state=DISABLED)
+        self._set_ui_state(NORMAL)
 
     def save_history(self):
-        with open(HISTORY_FILE, 'w') as f:
+        with open(HISTORY_FILE, "w") as f:
             json.dump(self.history, f, indent=2)
 
     def load_history(self):
         if os.path.exists(HISTORY_FILE):
-            with open(HISTORY_FILE, 'r') as f:
+            with open(HISTORY_FILE, "r") as f:
                 self.history = json.load(f)
 
+    def save_config(self):
+        config = {"download_dir": self.download_dir}
+        with open(CONFIG_FILE, "w") as f:
+            json.dump(config, f, indent=2)
+
+    def load_config(self):
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, "r") as f:
+                config = json.load(f)
+                self.download_dir = config.get("download_dir", os.getcwd())
+
+    def update_history_box(self):
+        self.history_box.config(state=NORMAL)
+        self.history_box.delete("1.0", END)
+        for item in self.history:
+            self.history_box.insert(END, f"{item}\n")
+        self.history_box.config(state=DISABLED)
+
     def clear_history(self):
-        if messagebox.askyesno("Confirm", "Delete download history?"):
+        if messagebox.askyesno("Confirm", "Are you sure you want to delete all history?"):
             self.history.clear()
             self.save_history()
             self.update_history_box()
-
-    def quit_app(self):
-        self.stop_aria2c()
-        self.root.quit()
 
 if __name__ == "__main__":
     root = TkinterDnD.Tk()
