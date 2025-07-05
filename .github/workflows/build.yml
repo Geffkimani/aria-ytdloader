@@ -54,7 +54,7 @@ jobs:
         chmod +x assets/aria2c
 
     - name: Build with PyInstaller
-      run: pyinstaller build.spec
+      run: python -m PyInstaller build.spec
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
