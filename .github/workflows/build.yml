@@ -19,16 +19,32 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.13' # Changed to 3.13 to match local venv
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Debugging Python and PyInstaller paths
+      run: |
+        echo "PATH: $PATH"
+        which python
+        python -m pip list
+        ls -l venv/bin
+      if: runner.os == 'Linux' || runner.os == 'macOS'
+
+    - name: Clear existing assets
+      run: rm -rf assets/*
+      shell: bash
+
     - name: Download and prepare assets (Linux)
       if: runner.os == 'Linux'
       run: |
+        curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o assets/yt-dlp
+        sudo apt-get update
+        sudo apt-get install -y aria2
+        cp /usr/bin/aria2c assets/aria2c
         chmod +x assets/yt-dlp
         chmod +x assets/aria2c
 
@@ -36,7 +52,6 @@ jobs:
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        Remove-Item -Path assets/* -ErrorAction SilentlyContinue
         Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets/yt-dlp.exe"
         Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
         Expand-Archive -Path aria2.zip -DestinationPath .
@@ -45,7 +60,6 @@ jobs:
     - name: Download and prepare assets (macOS)
       if: runner.os == 'macOS'
       run: |
-        rm -rf assets/*
         curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o assets/yt-dlp
         curl -L https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-osx-darwin-build1.tar.bz2 -o aria2.tar.bz2
         tar -xjf aria2.tar.bz2
