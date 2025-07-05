@@ -51,7 +51,7 @@ jobs:
         chmod +x assets/yt-dlp
         chmod +x assets/aria2c
 
-        - name: Download and prepare assets (Windows)
+    - name: Download and prepare assets (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
