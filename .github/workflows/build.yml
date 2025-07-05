@@ -1,0 +1,63 @@
+name: Build Application
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download and prepare assets (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        chmod +x assets/yt-dlp
+        chmod +x assets/aria2c
+
+    - name: Download and prepare assets (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Remove-Item -Path assets/* -ErrorAction SilentlyContinue
+        Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets/yt-dlp.exe"
+        Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
+        Expand-Archive -Path aria2.zip -DestinationPath .
+        Move-Item -Path "aria2-1.37.0-win-64bit-build1/aria2c.exe" -Destination "assets/aria2c.exe"
+
+    - name: Download and prepare assets (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        rm -rf assets/*
+        curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o assets/yt-dlp
+        curl -L https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-osx-darwin-build1.tar.bz2 -o aria2.tar.bz2
+        tar -xjf aria2.tar.bz2
+        mv aria2-1.37.0-osx-darwin-build1/aria2c assets/aria2c
+        chmod +x assets/yt-dlp
+        chmod +x assets/aria2c
+
+    - name: Build with PyInstaller
+      run: pyinstaller build.spec
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AriaDownloader-${{ runner.os }}
+        path: dist/*
