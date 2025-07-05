@@ -60,6 +60,7 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
         Expand-Archive -Path aria2.zip -DestinationPath .
         Move-Item -Path "aria2-1.37.0-win-64bit-build1/aria2c.exe" -Destination "assets/aria2c.exe"
+        Copy-Item "assets/aria2c.exe" "assets/aria2c"
         Remove-Item aria2.zip
         Remove-Item -Recurse -Force aria2-1.37.0-win-64bit-build1
 
