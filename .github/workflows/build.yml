@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.13' # Changed to 3.13 to match local venv
+        python-version: '3.13' # Using 3.13 as seen in logs
 
     - name: Install dependencies
       run: |
@@ -31,11 +31,12 @@ jobs:
         echo "PATH: $PATH"
         which python
         python -m pip list
-        ls -l venv/bin
       if: runner.os == 'Linux' || runner.os == 'macOS'
 
-    - name: Clear existing assets
-      run: rm -rf assets/*
+    - name: Create assets directory and clear existing
+      run: |
+        mkdir -p assets
+        rm -rf assets/*
       shell: bash
 
     - name: Download and prepare assets (Linux)
@@ -56,6 +57,8 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
         Expand-Archive -Path aria2.zip -DestinationPath .
         Move-Item -Path "aria2-1.37.0-win-64bit-build1/aria2c.exe" -Destination "assets/aria2c.exe"
+        Remove-Item aria2.zip
+        Remove-Item -Recurse -Force aria2-1.37.0-win-64bit-build1
 
     - name: Download and prepare assets (macOS)
       if: runner.os == 'macOS'
@@ -66,6 +69,8 @@ jobs:
         mv aria2-1.37.0-osx-darwin-build1/aria2c assets/aria2c
         chmod +x assets/yt-dlp
         chmod +x assets/aria2c
+        rm aria2.tar.bz2
+        rm -rf aria2-1.37.0-osx-darwin-build1
 
     - name: Build with PyInstaller
       run: python -m PyInstaller build.spec
