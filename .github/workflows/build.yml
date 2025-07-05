@@ -57,7 +57,7 @@ jobs:
       run: |
         New-Item -ItemType Directory -Force -Path assets
         Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets\\yt-dlp.exe"
-        Rename-Item -Path "assets\\yt-dlp.exe" -NewName "yt-dlp"
+        Copy-Item -Path "assets\\yt-dlp.exe" -Destination "assets\\yt-dlp"  # ✅ Fix to match build.spec
         choco install aria2 -y
         Copy-Item "C:\\ProgramData\\chocolatey\\bin\\aria2c.exe" -Destination "assets\\aria2c.exe"
 
