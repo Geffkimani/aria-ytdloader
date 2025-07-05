@@ -1,4 +1,4 @@
-name: Cross-Platform Build: AriaDownloader (Win + Mac + Linux)
+name: "Cross-Platform Build: AriaDownloader (Win + Mac + Linux)"
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: "3.12"
 
     - name: Install dependencies
       run: |
@@ -55,10 +55,11 @@ jobs:
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets/yt-dlp.exe"
-        Copy-Item "assets/yt-dlp.exe" "assets/yt-dlp"
-        choco install aria2 -y
-        Copy-Item "C:\ProgramData\chocolatey\bin\aria2c.exe" -Destination "assets\aria2c.exe"
+        New-Item -ItemType Directory -Force -Path assets
+        Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets\\yt-dlp"
+        Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
+        Expand-Archive -Path "aria2.zip" -DestinationPath "."
+        Move-Item -Path "aria2-1.37.0-win-64bit-build1\\aria2c.exe" -Destination "assets\\aria2c.exe"
 
     - name: Download and prepare assets (macOS)
       if: runner.os == 'macOS'
