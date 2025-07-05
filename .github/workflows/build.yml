@@ -63,10 +63,9 @@ jobs:
     - name: Download and prepare assets (macOS)
       if: runner.os == 'macOS'
       run: |
+        brew install aria2
         curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o assets/yt-dlp
-        curl -L https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-osx-darwin-build1.tar.bz2 -o aria2.tar.bz2
-        tar -xjf aria2.tar.bz2
-        mv aria2-1.37.0-osx-darwin-build1/aria2c assets/aria2c
+        cp $(which aria2c) assets/aria2c
         chmod +x assets/yt-dlp
         chmod +x assets/aria2c
 
