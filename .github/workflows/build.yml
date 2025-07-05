@@ -56,7 +56,7 @@ jobs:
       shell: pwsh
       run: |
         Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets/yt-dlp.exe"
-        Rename-Item -Path "assets/yt-dlp.exe" -NewName "assets/yt-dlp"
+        Rename-Item -Path "assets/yt-dlp.exe" -NewName "yt-dlp"
         choco install aria2 -y
         Copy-Item "C:\ProgramData\chocolatey\bin\aria2c.exe" -Destination "assets\aria2c.exe"
 
