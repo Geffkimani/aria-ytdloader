@@ -2,7 +2,7 @@ name: "Cross-Platform Build: AriaDownloader (Win + Mac + Linux)"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   workflow_dispatch:
 
 jobs:
