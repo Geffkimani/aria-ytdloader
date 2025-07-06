@@ -1,5 +1,8 @@
 name: "Cross-Platform Build: AriaDownloader (Win + Mac + Linux)"
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ "master" ]

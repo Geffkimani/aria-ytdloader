@@ -12,7 +12,7 @@ a = Analysis(
         ('./assets/yt-dlp', 'assets'),
         ('./assets/aria2c', 'assets'),
     ],
-    hiddenimports=[],
+    hiddenimports=['tkinterdnd2'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
