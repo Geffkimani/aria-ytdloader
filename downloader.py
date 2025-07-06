@@ -152,7 +152,6 @@ class DownloaderApp(ttk.Frame):
         self.url_entry.config(state=state)
         self.select_folder_button.config(state=state)
         self.clear_history_button.config(state=state)
-        self.history_view.config(state=state)
         self.audio_only_checkbox.config(state=state)
         self.theme_selector.config(state=state)
         
