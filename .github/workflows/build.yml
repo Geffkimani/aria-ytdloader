@@ -98,8 +98,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_id }}
-          name: "AriaDownloader v1.0.${{ github.run_id }}"
+          tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
+          name: "AriaDownloader v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
           body: |
             🚀 New cross-platform release of AriaDownloader:
             - ✅ Windows
@@ -111,7 +111,7 @@ jobs:
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_id }}
+          tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
           name: "AriaDownloader"
-          files: ./artifacts/**/* 
-          overwrite: true
+          files: ./artifacts/**/*
+
