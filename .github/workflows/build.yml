@@ -82,7 +82,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: AriaDownloader-${{ matrix.os }}-${{ github.run_id }}
+        name: AriaDownloader-${{ runner.os }}
         path: dist/*
 
   release:
@@ -94,6 +94,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
+
+      - name: Delete existing tag if exists
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git fetch --tags
+          TAG="v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
+          if git show-ref --tags --quiet --verify "refs/tags/$TAG"; then
+            echo "Tag $TAG exists. Deleting..."
+            git push origin ":refs/tags/$TAG"
+            git tag -d "$TAG"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -114,4 +126,3 @@ jobs:
           tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
           name: "AriaDownloader"
           files: ./artifacts/**/*
-
