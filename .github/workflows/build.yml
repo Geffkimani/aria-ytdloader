@@ -8,9 +8,6 @@ on:
     branches: [ "master" ]
   workflow_dispatch:
 
-env:
-  APP_VERSION: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -19,104 +16,135 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Prepare assets
-        run: mkdir -p assets && rm -rf assets/*
-        shell: bash
+    - name: Confirm Python and pip
+      run: |
+        echo "PATH: $PATH"
+        which python
+        python --version
+        pip list
 
-      - name: Download yt-dlp and aria2 (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o assets/yt-dlp
-          sudo apt-get update && sudo apt-get install -y aria2
-          cp /usr/bin/aria2c assets/aria2c
-          chmod +x assets/yt-dlp assets/aria2c
+    - name: Ensure assets directory exists
+      run: mkdir -p assets
+      shell: bash
 
-      - name: Download yt-dlp and aria2 (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets/yt-dlp.exe"
-          Copy-Item "assets/yt-dlp.exe" "assets/yt-dlp"
-          Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
-          Expand-Archive -Path aria2.zip -DestinationPath .
-          Move-Item -Path "aria2-1.37.0-win-64bit-build1/aria2c.exe" -Destination "assets/aria2c.exe"
-          Copy-Item "assets/aria2c.exe" "assets/aria2c"
-          Remove-Item aria2.zip -Force
-          Remove-Item -Recurse -Force aria2-1.37.0-win-64bit-build1
+    - name: Clear existing assets
+      run: rm -rf assets/*
+      shell: bash
 
-      - name: Download yt-dlp and aria2 (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install aria2
-          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o assets/yt-dlp
-          cp $(which aria2c) assets/aria2c
-          chmod +x assets/yt-dlp assets/aria2c
+    - name: Download and prepare assets (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o assets/yt-dlp
+        sudo apt-get update
+        sudo apt-get install -y aria2 zip
+        cp /usr/bin/aria2c assets/aria2c
+        chmod +x assets/yt-dlp
+        chmod +x assets/aria2c
 
-      - name: Build with PyInstaller
-        run: python -m PyInstaller build.spec
+    - name: Download and prepare assets (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "assets/yt-dlp.exe"
+        Copy-Item "assets/yt-dlp.exe" "assets/yt-dlp"
+        Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
+        Expand-Archive -Path aria2.zip -DestinationPath .
+        Move-Item -Path "aria2-1.37.0-win-64bit-build1/aria2c.exe" -Destination "assets/aria2c.exe"
+        Copy-Item "assets/aria2c.exe" "assets/aria2c"
+        Remove-Item aria2.zip
+        Remove-Item -Recurse -Force aria2-1.37.0-win-64bit-build1
 
-      - name: Zip binaries
-        run: |
-          cd dist
-          zip -r ../AriaDownloader-${{ runner.os }}.zip .
-        shell: bash
+    - name: Download and prepare assets (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install aria2 zip
+        curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o assets/yt-dlp
+        cp $(which aria2c) assets/aria2c
+        chmod +x assets/yt-dlp
+        chmod +x assets/aria2c
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: AriaDownloader-${{ runner.os }}
-          path: AriaDownloader-${{ runner.os }}.zip
+    - name: Build with PyInstaller
+      run: python -m PyInstaller build.spec
+
+    # --- Create ZIP based on platform ---
+    - name: Create ZIP archive (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Compress-Archive -Path dist\* -DestinationPath AriaDownloader-Windows.zip
+
+    - name: Create ZIP archive (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        cd dist
+        zip -r ../AriaDownloader-${{ runner.os }}.zip .
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AriaDownloader-${{ runner.os }}
+        path: |
+          AriaDownloader-*.zip
 
   release:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Delete existing tag if exists
-        run: |
-          git fetch --tags
-          TAG="${{ env.APP_VERSION }}"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Deleting existing tag $TAG..."
-            git push origin ":refs/tags/$TAG"
-            git tag -d "$TAG"
-            sleep 5
-          fi
-          if git ls-remote --tags origin | grep "refs/tags/$TAG"; then
-            echo "Tag still exists remotely. Aborting release."
-            exit 1
-          fi
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
 
+      - name: Delete existing tag if exists
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git fetch --tags
+          TAG="v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
+          if git show-ref --tags --quiet --verify "refs/tags/$TAG"; then
+            echo "Tag $TAG exists. Deleting..."
+            git push origin ":refs/tags/$TAG"
+            git tag -d "$TAG"
+            sleep 5
+          fi
+          if git ls-remote --tags origin | grep "refs/tags/$TAG"; then
+            echo "Tag $TAG still exists remotely. Aborting."
+            exit 1
+          fi
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.APP_VERSION }}
-          name: "AriaDownloader ${{ env.APP_VERSION }}"
+          tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
+          name: "AriaDownloader v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
           body: |
-            🚀 New release for AriaDownloader:
-            - ✅ Windows, macOS, Linux
-          files: ./artifacts/**/*.zip
+            🚀 New cross-platform release of AriaDownloader:
+            - ✅ Windows
+            - ✅ macOS
+            - ✅ Linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
+          name: "AriaDownloader"
+          files: ./artifacts/**/*.zip
