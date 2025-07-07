@@ -51,8 +51,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y aria2
         cp /usr/bin/aria2c assets/aria2c
-        chmod +x assets/yt-dlp
-        chmod +x assets/aria2c
+        chmod +x assets/yt-dlp assets/aria2c
 
     - name: Download and prepare assets (Windows)
       if: runner.os == 'Windows'
@@ -62,7 +61,7 @@ jobs:
         Copy-Item "assets/yt-dlp.exe" "assets/yt-dlp"
         Invoke-WebRequest -Uri "https://github.com/aria2/aria2/releases/latest/download/aria2-1.37.0-win-64bit-build1.zip" -OutFile "aria2.zip"
         Expand-Archive -Path aria2.zip -DestinationPath .
-        Move-Item -Path "aria2-1.37.0-win-64bit-build1/aria2c.exe" -Destination "assets/aria2c.exe"
+        Move-Item "aria2-1.37.0-win-64bit-build1/aria2c.exe" "assets/aria2c.exe"
         Copy-Item "assets/aria2c.exe" "assets/aria2c"
         Remove-Item aria2.zip
         Remove-Item -Recurse -Force aria2-1.37.0-win-64bit-build1
@@ -73,8 +72,7 @@ jobs:
         brew install aria2
         curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o assets/yt-dlp
         cp $(which aria2c) assets/aria2c
-        chmod +x assets/yt-dlp
-        chmod +x assets/aria2c
+        chmod +x assets/yt-dlp assets/aria2c
 
     - name: Build with PyInstaller
       run: python -m PyInstaller build.spec
@@ -89,43 +87,54 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
+    - name: Generate unique release tag
+      id: tag
+      run: echo "tag=v1.0.$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
-      - name: Delete existing tag if exists
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git fetch --tags
-          TAG="v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
-          if git show-ref --tags --quiet --verify "refs/tags/$TAG"; then
-            echo "Tag $TAG exists. Deleting..."
-            git push origin ":refs/tags/$TAG"
-            git tag -d "$TAG"
-          fi
+    - name: Delete existing tag if exists
+      run: |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+        git fetch --tags
+        TAG="${{ steps.tag.outputs.tag }}"
+        if git show-ref --tags --quiet --verify "refs/tags/$TAG"; then
+          echo "Tag $TAG exists. Deleting..."
+          git push origin ":refs/tags/$TAG"
+          git tag -d "$TAG"
+          sleep 5
+        fi
+        # Confirm deletion
+        if git ls-remote --tags origin | grep "refs/tags/$TAG"; then
+          echo "Tag $TAG still exists remotely. Aborting."
+          exit 1
+        fi
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
-          name: "AriaDownloader v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
-          body: |
-            🚀 New cross-platform release of AriaDownloader:
-            - ✅ Windows
-            - ✅ macOS
-            - ✅ Linux
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
 
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
-          name: "AriaDownloader"
-          files: ./artifacts/**/*
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        name: "AriaDownloader ${{ steps.tag.outputs.tag }}"
+        body: |
+          🚀 New cross-platform release of AriaDownloader:
+          - ✅ Windows
+          - ✅ macOS
+          - ✅ Linux
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        name: "AriaDownloader"
+        files: ./artifacts/**/*
