@@ -90,42 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
 
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Ensure tag and release don't exist
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG="v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
-
-          # Delete release if it exists
-          if gh release view "$TAG" &>/dev/null; then
-            echo "Deleting existing release $TAG"
-            gh release delete "$TAG" --yes
-          fi
-
-          # Delete tag remotely and locally
-          git fetch origin --tags
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Deleting existing tag $TAG"
-            git push origin ":refs/tags/$TAG"
-            git tag -d "$TAG"
-          fi
-
-          echo "Waiting for tag deletion to sync..."
-          sleep 5
-
-          # Verify deletion
-          if git ls-remote --tags origin | grep "refs/tags/$TAG"; then
-            echo "❌ Tag still exists remotely. Aborting."
-            exit 1
-          fi
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -141,13 +106,6 @@ jobs:
             - ✅ Windows
             - ✅ macOS
             - ✅ Linux
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v1.0.${{ github.run_id }}-${{ github.run_attempt }}
           files: ./artifacts/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
