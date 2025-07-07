@@ -49,7 +49,7 @@ jobs:
         run: |
           curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o assets/yt-dlp
           sudo apt-get update
-          sudo apt-get install -y aria2 zip
+          sudo apt-get install -y aria2
           cp /usr/bin/aria2c assets/aria2c
           chmod +x assets/yt-dlp
           chmod +x assets/aria2c
@@ -70,7 +70,7 @@ jobs:
       - name: Download and prepare assets (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install aria2 zip
+          brew install aria2
           curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o assets/yt-dlp
           cp $(which aria2c) assets/aria2c
           chmod +x assets/yt-dlp
@@ -97,20 +97,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Delete existing tag and release if exists
+      - name: Ensure tag and release don't exist
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v1.0.${{ github.run_id }}-${{ github.run_attempt }}"
-          echo "Checking for existing release with tag: $TAG"
 
-          gh release delete "$TAG" --yes || echo "No existing release found"
-          git fetch --tags
+          # Delete release if it exists
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Deleting existing release $TAG"
+            gh release delete "$TAG" --yes
+          fi
 
-          if git ls-remote --tags origin | grep "refs/tags/$TAG"; then
-            echo "Deleting remote tag $TAG"
+          # Delete tag remotely and locally
+          git fetch origin --tags
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Deleting existing tag $TAG"
             git push origin ":refs/tags/$TAG"
-            sleep 5
+            git tag -d "$TAG"
+          fi
+
+          echo "Waiting for tag deletion to sync..."
+          sleep 5
+
+          # Verify deletion
+          if git ls-remote --tags origin | grep "refs/tags/$TAG"; then
+            echo "❌ Tag still exists remotely. Aborting."
+            exit 1
           fi
 
       - name: Download all artifacts
