@@ -96,6 +96,13 @@ jobs:
         with:
           path: ./artifacts
 
+      - name: Rename Artifacts
+        run: |
+          for dir in artifacts/*/; do
+            os_name=$(basename "$dir")
+            mv "${dir}AriaDownloader" "${dir}AriaDownloader-${os_name}"
+          done
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
