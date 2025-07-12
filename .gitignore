@@ -1,0 +1,10 @@
+# PyInstaller build directories
+build/
+dist/
+
+# Generated files
+*.spec
+
+# Application-specific files
+history.json
+aria2.session
