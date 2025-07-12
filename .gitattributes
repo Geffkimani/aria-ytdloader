@@ -1,0 +1,4 @@
+assets/yt-dlp filter=lfs diff=lfs merge=lfs -text
+assets/yt-dlp.exe filter=lfs diff=lfs merge=lfs -text
+assets/aria2c filter=lfs diff=lfs merge=lfs -text
+assets/aria2c.exe filter=lfs diff=lfs merge=lfs -text
