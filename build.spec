@@ -9,8 +9,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('./assets/yt-dlp', 'assets'),
-        ('./assets/aria2c', 'assets'),
+        ('./assets', 'assets'),
     ],
     hiddenimports=['tkinterdnd2'],
     hookspath=[],
