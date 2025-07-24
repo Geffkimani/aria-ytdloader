@@ -13,6 +13,9 @@ from queue import Queue, Empty
 import sys
 import signal
 import requests
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 HISTORY_FILE = "history.json"
 CONFIG_FILE = "settings.json"
@@ -139,6 +142,26 @@ class SettingsWindow(ttk.Toplevel):
         ttk.Button(clear_history_frame, text="Clear History", command=self.app.clear_history).pack(side=tk.LEFT, padx=5)
 
 
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.post("/add")
+async def add_video(request: Request):
+    data = await request.json()
+    url = data.get("url")
+    if url:
+        # Use the new method to add and start the download
+        app_instance.add_and_start_download_from_extension(url)
+        return {"status": "download_started"}
+    return {"error": "no url"}
+
+
 class DownloaderApp(ttk.Frame):
     def __init__(self, master, style):
         super().__init__(master, padding=15)
@@ -166,6 +189,30 @@ class DownloaderApp(ttk.Frame):
         # UI Elements
         self.create_widgets()
         self.update_option_states()  # Set initial state
+
+        # Start FastAPI server
+        self.start_fastapi_server()
+
+    def add_and_start_download_from_extension(self, url):
+        """Adds a URL from the extension to the queue and starts the queue."""
+        # Add to queue first
+        self.download_queue.append({
+            "url": url,
+            "quality": self.quality_var.get(),
+            "audio_only": self.audio_only_var.get(),
+            "embed_thumbnail": self.embed_thumbnail_var.get(),
+            "title": "Fetching title..."
+        })
+        # Schedule GUI updates and queue start on the main Tkinter thread
+        self.after(0, self.update_history_view)
+        self.after(10, self.start_queue) # Use a small delay to allow UI to update first
+
+    def start_fastapi_server(self):
+        def run_server():
+            uvicorn.run(app, host="127.0.0.1", port=5000)
+
+        self.fastapi_thread = threading.Thread(target=run_server, daemon=True)
+        self.fastapi_thread.start()
 
     def create_widgets(self):
         option_text = "Enter a video URL to begin"
@@ -800,9 +847,13 @@ class DownloaderApp(ttk.Frame):
 
 
 if __name__ == "__main__":
-    root = TkinterDnD.Tk()
-    root.title("Aria Youtube Downloader")
-    root.geometry("900x700")
-    style = ttk.Style()
-    app = DownloaderApp(root, style)
-    root.mainloop()
+    try:
+        root = TkinterDnD.Tk()
+        root.title("Aria Youtube Downloader")
+        root.geometry("900x700")
+        style = ttk.Style()
+        app_instance = DownloaderApp(root, style)
+        root.mainloop()
+    except BrokenPipeError:
+        # This error can be safely ignored.
+        pass

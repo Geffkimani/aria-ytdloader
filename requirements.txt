@@ -1,5 +1,5 @@
 requests
-pyinstaller
-tkinterdnd2
+fastapi
+uvicorn
 ttkbootstrap
-requests
+tkinterdnd2

@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Aria Video Sniffer",
+  "version": "1.0",
+  "description": "Injects a download button on video pages.",
+  "permissions": ["tabs", "activeTab", "notifications"],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.vimeo.com/*"],
+      "js": ["inject.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
