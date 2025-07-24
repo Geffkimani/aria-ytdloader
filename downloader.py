@@ -337,26 +337,16 @@ class DownloaderApp(ttk.Frame):
             self._fetch_playlist_info(url, download_now=True)
             return
 
-        item = {
+        self.download_queue.append({
             "url": url,
             "quality": self.quality_var.get(),
             "audio_only": self.audio_only_var.get(),
             "embed_thumbnail": self.embed_thumbnail_var.get(),
             "title": "Fetching title..."
-        }
-
-        self.is_cancelled = False
-        self.open_folder_button.pack_forget()
-        self._set_ui_state(DISABLED)
-        self.status_var.set("Status: Starting download...")
-        self.progress.config(value=0)
-        self.percentage_var.set("0.0%")
-        self.speed_var.set("")
-        self.size_var.set("")
-
-        thread = threading.Thread(target=self.run_download, args=(self.build_command(url, 'list=' in url, False, item), url), daemon=True)
-        thread.start()
-        self.after(100, self.process_queue)
+        })
+        self.update_history_view()
+        self.url_var.set("")
+        self.start_queue()
 
     def add_to_queue(self):
         url = self.url_var.get().strip()
@@ -514,7 +504,7 @@ class DownloaderApp(ttk.Frame):
             pass
         self.after(100, self.process_queue)
 
-    def run_download(self, cmd, url):
+    def run_download(self, cmd, url, item):
         kwargs = {
             'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE,
             'text': True, 'bufsize': 1, 'universal_newlines': True, 'encoding': 'utf-8'
@@ -526,11 +516,23 @@ class DownloaderApp(ttk.Frame):
 
         stderr_output = []
 
-        # Use threads to read stdout and stderr concurrently
         def read_stdout(pipe, queue):
             for line in iter(pipe.readline, ''):
                 if self.is_cancelled: break
-                queue.put({'type': 'status', 'text': line.strip()})
+                match = re.search(r'\[download\]\s+([\d\.]+)% of (.*) at (.*) ETA (.*)',
+                                line)
+                if match:
+                    percent = float(match.group(1))
+                    size = match.group(2).strip()
+                    speed = match.group(3).strip()
+                    queue.put({
+                        'type': 'progress',
+                        'percent': percent,
+                        'size': size,
+                        'speed': speed
+                    })
+                else:
+                    queue.put({'type': 'status', 'text': line.strip()})
             pipe.close()
 
         def read_stderr(pipe, buffer):
@@ -544,8 +546,8 @@ class DownloaderApp(ttk.Frame):
         stdout_thread.start()
         stderr_thread.start()
 
-        stdout_thread.join() # Wait for stdout to finish
-        stderr_thread.join() # Wait for stderr to finish
+        stdout_thread.join()
+        stderr_thread.join()
 
         process.wait()
         self.current_process = None
@@ -567,7 +569,49 @@ class DownloaderApp(ttk.Frame):
 
             self.queue.put({'type': 'done', 'success': False, 'error_message': error_message})
         else:
+            # Extract title after download
+            title_match = re.search(r'\[info\] Merging formats into "(.*?)"', "".join(stderr_output))
+            title = title_match.group(1) if title_match else item['title']
+
+            history_entry = {
+                "url": url,
+                "title": title,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            self.queue.put({'type': 'video_done', 'history_entry': history_entry})
+
+    def run_queue(self):
+        while self.download_queue:
+            if self.is_cancelled:
+                break
+
+            item = self.download_queue.pop(0)
+            self.update_history_view() # Update to show the item is processing
+
+            self.status_var.set(f"Status: Starting {item['title']}...")
+            self.progress.config(value=0)
+            self.percentage_var.set("0.0%")
+            self.speed_var.set("")
+            self.size_var.set("")
+
+            # Fetch title if necessary
+            if item['title'] == 'Fetching title...':
+                try:
+                    yt_dlp_path = f"./assets/yt-dlp{'.exe' if sys.platform == 'win32' else ''}"
+                    title_cmd = [yt_dlp_path, "--get-title", item['url']]
+                    item['title'] = subprocess.check_output(title_cmd, text=True, encoding='utf-8').strip()
+                    self.status_var.set(f"Status: Starting {item['title']}...")
+                except Exception as e:
+                    self.status_var.set(f"Status: Error fetching title for {item['url']}")
+                    continue # Skip to next item
+
+            cmd = self.build_command(item['url'], 'list=' in item['url'], False, item)
+            self.run_download(cmd, item['url'], item)
+
+        if not self.is_cancelled:
             self.queue.put({'type': 'done', 'success': True})
+        else:
+            self.queue.put({'type': 'cancelled'})
 
     def open_download_folder(self):
         path = self.download_dir.get()
@@ -593,8 +637,8 @@ class DownloaderApp(ttk.Frame):
         selected_items = self.history_view.selection()
         if not selected_items: return
         item_values = self.history_view.item(selected_items[0], 'values')
-        if item_values and len(item_values) >= 3:
-            url = item_values[2]
+        if item_values and len(item_values) > 3:
+            url = item_values[3]
             self.root.clipboard_clear()
             self.root.clipboard_append(url)
             self.status_var.set("Status: URL copied to clipboard!")
@@ -604,10 +648,10 @@ class DownloaderApp(ttk.Frame):
         selected_items = self.history_view.selection()
         if not selected_items: return
         item_values = self.history_view.item(selected_items[0], 'values')
-        if item_values and len(item_values) >= 3:
-            url = item_values[2]
+        if item_values and len(item_values) > 3:
+            url = item_values[3]
             self.url_var.set(url)
-            self.download()
+            self.download_now()
 
     def update_yt_dlp(self):
         if messagebox.askyesno("Confirm", "This will download the latest version of yt-dlp. Continue?"):
@@ -713,67 +757,30 @@ class DownloaderApp(ttk.Frame):
                 values=("Completed", item.get('title', 'N/A'), item.get('date', 'N/A'), item.get('url', 'N/A'))
             )
 
-    def add_to_queue(self):
-        url = self.url_var.get().strip()
-        if not url:
-            messagebox.showwarning("Missing URL", "Please enter a YouTube URL")
-            return
-
-        is_playlist = 'list=' in url
-        if is_playlist:
-            self._fetch_playlist_info(url, download_now=False)
-            return
-
-        self.download_queue.append({
-            "url": url,
-            "quality": self.quality_var.get(),
-            "audio_only": self.audio_only_var.get(),
-            "embed_thumbnail": self.embed_thumbnail_var.get(),
-            "title": "Fetching title..."
-        })
+    def process_playlist_selection(self, selected_urls, download_now):
+        for url in selected_urls:
+            self.download_queue.append({
+                "url": url,
+                "quality": self.quality_var.get(),
+                "audio_only": self.audio_only_var.get(),
+                "embed_thumbnail": self.embed_thumbnail_var.get(),
+                "title": "Fetching title..." # This will be updated later
+            })
+        
         self.update_history_view()
         self.url_var.set("")
+        self._set_ui_state(NORMAL)
 
-    def process_playlist_selection(self, selected_urls, download_now):
         if download_now:
-            # If downloading now, process each selected URL individually
-            for url in selected_urls:
-                item = {
-                    "url": url,
-                    "quality": self.quality_var.get(),
-                    "audio_only": self.audio_only_var.get(),
-                    "embed_thumbnail": self.embed_thumbnail_var.get(),
-                    "title": "Fetching title..."
-                }
-                self.is_cancelled = False
-                self.open_folder_button.pack_forget()
-                self._set_ui_state(DISABLED)
-                self.status_var.set("Status: Starting download...")
-                self.progress.config(value=0)
-                self.percentage_var.set("0.0%")
-                self.speed_var.set("")
-                self.size_var.set("")
-
-                thread = threading.Thread(target=self.run_download, args=(self.build_command(url, False, False, item), url), daemon=True)
-                thread.start()
-                self.after(100, self.process_queue)
-        else:
-            # If adding to queue, add each selected URL as a separate item
-            for url in selected_urls:
-                self.download_queue.append({
-                    "url": url,
-                    "quality": self.quality_var.get(),
-                    "audio_only": self.audio_only_var.get(),
-                    "embed_thumbnail": self.embed_thumbnail_var.get(),
-                    "title": "Fetching title..."
-                })
-            self.update_history_view()
-            self.url_var.set("")
-            self._set_ui_state(NORMAL)
+            self.start_queue()
 
     def start_queue(self):
         if not self.download_queue:
             messagebox.showinfo("Queue Empty", "There are no videos in the queue.")
+            return
+
+        if self.current_process:
+            messagebox.showinfo("Download in Progress", "A download is already in progress.")
             return
 
         self.is_cancelled = False
