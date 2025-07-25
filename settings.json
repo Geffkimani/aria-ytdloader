@@ -1,4 +1,6 @@
 {
   "download_dir": "/home/extra/music",
-  "theme": "darkly"
+  "theme": "darkly",
+  "video_format": "mp4",
+  "audio_format": "mp3"
 }

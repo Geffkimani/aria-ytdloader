@@ -109,7 +109,7 @@ class SettingsWindow(ttk.Toplevel):
     def __init__(self, master, app_instance):
         super().__init__(master)
         self.title("Settings")
-        self.geometry("400x300")
+        self.geometry("400x400")
         self.app = app_instance
 
         self.create_widgets()
@@ -131,6 +131,22 @@ class SettingsWindow(ttk.Toplevel):
         ttk.Entry(save_location_frame, textvariable=self.app.download_dir, state="readonly").pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         ttk.Button(save_location_frame, text="Browse", command=self.app.select_folder).pack(side=tk.LEFT, padx=5)
 
+        # Video Format
+        video_format_frame = ttk.Frame(self, padding=10)
+        video_format_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(video_format_frame, text="Video Format:").pack(side=tk.LEFT, padx=(0, 5))
+        self.video_format_selector = ttk.Combobox(video_format_frame, textvariable=self.app.video_format_var, values=["mp4", "mkv", "webm"],
+                                                  state="readonly", width=15)
+        self.video_format_selector.pack(side=tk.LEFT, padx=5)
+
+        # Audio Format
+        audio_format_frame = ttk.Frame(self, padding=10)
+        audio_format_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(audio_format_frame, text="Audio Format:").pack(side=tk.LEFT, padx=(0, 5))
+        self.audio_format_selector = ttk.Combobox(audio_format_frame, textvariable=self.app.audio_format_var, values=["mp3", "m4a", "wav"],
+                                                  state="readonly", width=15)
+        self.audio_format_selector.pack(side=tk.LEFT, padx=5)
+
         # Update yt-dlp
         update_frame = ttk.Frame(self, padding=10)
         update_frame.pack(fill=tk.X, pady=5)
@@ -140,6 +156,15 @@ class SettingsWindow(ttk.Toplevel):
         clear_history_frame = ttk.Frame(self, padding=10)
         clear_history_frame.pack(fill=tk.X, pady=5)
         ttk.Button(clear_history_frame, text="Clear History", command=self.app.clear_history).pack(side=tk.LEFT, padx=5)
+
+        # Save Button
+        save_button_frame = ttk.Frame(self, padding=10)
+        save_button_frame.pack(fill=tk.X, pady=5)
+        ttk.Button(save_button_frame, text="Save", command=self.save_settings).pack(side=RIGHT, padx=5)
+
+    def save_settings(self):
+        self.app.save_config()
+        self.destroy()
 
 
 app = FastAPI()
@@ -176,6 +201,8 @@ class DownloaderApp(ttk.Frame):
         self.audio_only_var = ttk.BooleanVar(value=False)
         self.embed_thumbnail_var = ttk.BooleanVar(value=False)
         self.theme_var = ttk.StringVar()
+        self.video_format_var = ttk.StringVar(value="mp4")
+        self.audio_format_var = ttk.StringVar(value="mp3")
         self.history = []
         self.threads = []
         self.queue = Queue()
@@ -240,10 +267,13 @@ class DownloaderApp(ttk.Frame):
         self.open_folder_button = ttk.Button(status_frame, text="Open Folder", command=self.open_download_folder,
                                              width=12)
 
-        self.size_var = ttk.StringVar()
-        ttk.Label(status_frame, textvariable=self.size_var).pack(side=RIGHT, padx=5)
         self.speed_var = ttk.StringVar()
-        ttk.Label(status_frame, textvariable=self.speed_var).pack(side=RIGHT, padx=5)
+        self.speed_label = ttk.Label(status_frame, textvariable=self.speed_var)
+        self.speed_label.pack(side=RIGHT, padx=5)
+
+        self.size_var = ttk.StringVar()
+        self.size_label = ttk.Label(status_frame, textvariable=self.size_var)
+        self.size_label.pack(side=RIGHT, padx=5)
 
         self.create_history_view()
         self.update_history_view()
@@ -252,7 +282,7 @@ class DownloaderApp(ttk.Frame):
     def create_url_row(self, parent):
         url_row = ttk.Frame(parent)
         url_row.pack(fill=X, expand=YES, pady=5)
-        ttk.Label(url_row, text="URL", width=8).pack(side=LEFT, padx=(0, 5))
+        ttk.Label(url_row, text="Video URL", width=10).pack(side=LEFT, padx=(0, 5))
 
         self.url_entry = ttk.Entry(url_row, textvariable=self.url_var)
         self.url_entry.pack(side=LEFT, fill=X, expand=YES, padx=5)
@@ -314,7 +344,7 @@ class DownloaderApp(ttk.Frame):
         self.history_view.heading('status', text='Status', anchor=W)
         self.history_view.heading('title', text='Title', anchor=W)
         self.history_view.heading('date', text='Date', anchor=W)
-        self.history_view.heading('url', text='URL', anchor=W)
+        self.history_view.heading('url', text='Video URL', anchor=W)
 
         self.history_view.column('status', anchor=W, width=100)
         self.history_view.column('title', anchor=W, width=250)
@@ -376,81 +406,83 @@ class DownloaderApp(ttk.Frame):
     def download_now(self):
         url = self.url_var.get().strip()
         if not url:
-            messagebox.showwarning("Missing URL", "Please enter a YouTube URL")
+            messagebox.showwarning("Missing URL", "Please enter a video URL")
             return
 
-        is_playlist = 'list=' in url
-        if is_playlist:
-            self._fetch_playlist_info(url, download_now=True)
-            return
-
-        self.download_queue.append({
-            "url": url,
-            "quality": self.quality_var.get(),
-            "audio_only": self.audio_only_var.get(),
-            "embed_thumbnail": self.embed_thumbnail_var.get(),
-            "title": "Fetching title..."
-        })
-        self.update_history_view()
-        self.url_var.set("")
-        self.start_queue()
+        self._fetch_playlist_info(url, download_now=True)
 
     def add_to_queue(self):
         url = self.url_var.get().strip()
         if not url:
-            messagebox.showwarning("Missing URL", "Please enter a YouTube URL")
+            messagebox.showwarning("Missing URL", "Please enter a video URL")
             return
 
-        is_playlist = 'list=' in url
-        if is_playlist:
-            self._fetch_playlist_info(url, download_now=False)
-            return
-
-        self.download_queue.append({
-            "url": url,
-            "quality": self.quality_var.get(),
-            "audio_only": self.audio_only_var.get(),
-            "embed_thumbnail": self.embed_thumbnail_var.get(),
-            "title": "Fetching title..."
-        })
-        self.update_history_view()
-        self.url_var.set("")
+        self._fetch_playlist_info(url, download_now=False)
 
     def _fetch_playlist_info(self, url, download_now):
         self.status_var.set("Status: Fetching playlist info...")
         self._set_ui_state(DISABLED)
-        thread = threading.Thread(target=self._run_fetch_playlist_info, args=(url, download_now), daemon=True)
+
+        def ask_playlist_download_options(videos):
+            if len(videos) == 1:
+                self.process_playlist_selection([videos[0]['url']], download_now)
+                return
+
+            answer = messagebox.askyesnocancel(
+                "Playlist Detected",
+                "This is a playlist. Do you want to download the entire playlist?\n" + 
+                "Yes - Download all videos.\n" + 
+                "No - Select specific videos to download.",
+                parent=self.root
+            )
+
+            if answer is True: # Yes
+                self.process_playlist_selection([v['url'] for v in videos], download_now)
+            elif answer is False: # No
+                PlaylistSelectionWindow(self.root, self, videos, url, download_now)
+            else: # Cancel
+                self._set_ui_state(NORMAL)
+
+        thread = threading.Thread(target=self._run_fetch_playlist_info, args=(url, download_now, ask_playlist_download_options), daemon=True)
         thread.start()
 
-    def _run_fetch_playlist_info(self, url, download_now):
+    def _run_fetch_playlist_info(self, url, download_now, on_complete):
         yt_dlp_path = f"./assets/yt-dlp{'.exe' if sys.platform == 'win32' else ''}"
         cmd = [yt_dlp_path, "--flat-playlist", "--dump-json", url]
 
         try:
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
-            stdout, stderr = process.communicate()
+            
+            stdout_lines = process.stdout.readlines()
+            stderr_output = process.stderr.read()
+            return_code = process.wait()
 
-            if process.returncode != 0:
-                raise Exception(f"yt-dlp error: {stderr}")
+            if return_code != 0:
+                raise Exception(f"yt-dlp error: {stderr_output}")
 
             videos = []
-            for line in stdout.splitlines():
+            total_videos = len(stdout_lines)
+
+            for i, line in enumerate(stdout_lines):
                 try:
                     video_data = json.loads(line)
                     videos.append({
                         "id": video_data.get('id'),
                         "title": video_data.get('title'),
-                        "url": video_data.get('webpage_url', url) # Fallback to playlist URL if individual URL not found
+                        "url": video_data.get('url', url)
                     })
+                    if total_videos > 0:
+                        progress = (i + 1) / total_videos * 100
+                        if i % 5 == 0 or (i + 1) == total_videos:
+                             self.queue.put({'type': 'progress_bar', 'value': progress})
                 except json.JSONDecodeError:
                     continue
-
-            self.queue.put({'type': 'playlist_info', 'videos': videos, 'url': url, 'download_now': download_now})
+            
+            self.queue.put({'type': 'playlist_info', 'videos': videos, 'on_complete': on_complete})
 
         except Exception as e:
-            self.queue.put({'type': 'status', 'text': f"Error fetching playlist: {e}"})
-            messagebox.showerror("Error", f"Failed to fetch playlist information: {e}")
-            self._set_ui_state(NORMAL)
+            error_message = f"Failed to fetch information: {e}"
+            self.queue.put({'type': 'playlist_fetch_error', 'error': error_message})
 
     def build_command(self, url, is_playlist, download_playlist, item):
         yt_dlp_path = f"./assets/yt-dlp{'.exe' if sys.platform == 'win32' else ''}"
@@ -464,15 +496,17 @@ class DownloaderApp(ttk.Frame):
             output_template = os.path.join(self.download_dir.get(), "%(title)s [%(id)s].%(ext)s")
 
         if item['audio_only']:
-            format_cmd = ["-f", "bestaudio/best", "-x", "--audio-format", "mp3"]
+            format_cmd = ["-f", "bestaudio/best", "-x", "--audio-format", self.audio_format_var.get()]
             if item['embed_thumbnail']:
                 format_cmd.append("--embed-thumbnail")
         else:
             quality = self.quality_var.get().replace('p', '')
-            format_cmd = ["-f", f"bestvideo[height<={quality}]+bestaudio/best[height<={quality}]"]
+            format_cmd = ["-f", f"bestvideo[ext={self.video_format_var.get()}][height<={quality}]+bestaudio/best[ext={self.video_format_var.get()}]/best[ext={self.video_format_var.get()}]", "--merge-output-format", self.video_format_var.get()]
 
         playlist_cmd = []
-        if is_playlist:
+        if item.get("from_playlist"):
+            playlist_cmd = ["--no-playlist"]
+        elif is_playlist:
             playlist_cmd = ["--yes-playlist"] if download_playlist else ["--no-playlist"]
 
         remaining_cmd = [
@@ -534,19 +568,24 @@ class DownloaderApp(ttk.Frame):
                     if not self.is_cancelled:
                         error_message = msg.get('error_message', "An unknown error occurred.")
                         self.status_var.set(f"Status: Error - {error_message}")
-                        messagebox.showerror("Download Failed", error_message)
+                        if messagebox.askyesno("Download Failed", f"{error_message}\n\nWould you like to retry the download?"):
+                            self.download_queue.append(msg.get('item'))
+                            self.start_queue()
                 self._set_ui_state(NORMAL)
                 self.current_process = None
                 return
             elif msg_type == 'playlist_info':
                 videos = msg.get('videos', [])
-                original_url = msg.get('url')
-                download_now = msg.get('download_now')
-                if videos:
-                    PlaylistSelectionWindow(self.root, self, videos, original_url, download_now)
-                else:
-                    messagebox.showinfo("No Videos Found", "No videos were found in the playlist.")
+                on_complete = msg.get('on_complete')
+                if on_complete:
+                    on_complete(videos)
+            elif msg_type == 'playlist_fetch_error':
+                error_message = msg.get('error', "An unknown error occurred.")
+                self.status_var.set(f"Status: Error - {error_message}")
+                messagebox.showerror("Error", error_message)
                 self._set_ui_state(NORMAL)
+            elif msg_type == 'progress_bar':
+                self.progress.config(value=msg.get('value', 0))
         except Empty:
             pass
         self.after(100, self.process_queue)
@@ -614,7 +653,7 @@ class DownloaderApp(ttk.Frame):
             elif "aria2c" in full_stderr and "error" in full_stderr.lower():
                 error_message = "aria2c encountered an error. Check console for details."
 
-            self.queue.put({'type': 'done', 'success': False, 'error_message': error_message})
+            self.queue.put({'type': 'done', 'success': False, 'error_message': error_message, 'url': url, 'item': item})
         else:
             # Extract title after download
             title_match = re.search(r'\[info\] Merging formats into "(.*?)"', "".join(stderr_output))
@@ -652,7 +691,7 @@ class DownloaderApp(ttk.Frame):
                     self.status_var.set(f"Status: Error fetching title for {item['url']}")
                     continue # Skip to next item
 
-            cmd = self.build_command(item['url'], 'list=' in item['url'], False, item)
+            cmd = self.build_command(item['url'], 'list=' in item['url'], item.get("from_playlist"), item)
             self.run_download(cmd, item['url'], item)
 
         if not self.is_cancelled:
@@ -769,7 +808,9 @@ class DownloaderApp(ttk.Frame):
     def save_config(self):
         config = {
             "download_dir": self.download_dir.get(),
-            "theme": self.theme_var.get()
+            "theme": self.theme_var.get(),
+            "video_format": self.video_format_var.get(),
+            "audio_format": self.audio_format_var.get()
         }
         with open(CONFIG_FILE, "w") as f:
             json.dump(config, f, indent=2)
@@ -781,6 +822,8 @@ class DownloaderApp(ttk.Frame):
                     config = json.load(f)
                     self.download_dir.set(config.get("download_dir", os.getcwd()))
                     self.theme_var.set(config.get("theme", "darkly"))
+                    self.video_format_var.set(config.get("video_format", "mp4"))
+                    self.audio_format_var.set(config.get("audio_format", "mp3"))
             except json.JSONDecodeError:
                 self.theme_var.set("darkly")  # Default on corrupt file
         else:
@@ -811,7 +854,8 @@ class DownloaderApp(ttk.Frame):
                 "quality": self.quality_var.get(),
                 "audio_only": self.audio_only_var.get(),
                 "embed_thumbnail": self.embed_thumbnail_var.get(),
-                "title": "Fetching title..." # This will be updated later
+                "title": "Fetching title...", # This will be updated later
+                "from_playlist": True
             })
         
         self.update_history_view()
