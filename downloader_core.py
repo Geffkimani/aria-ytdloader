@@ -268,20 +268,18 @@ class DownloadProcess:
                 self.proc.wait(timeout=2)
             else:
                 self.proc.terminate()
-                self.proc.wait(timeout=2)
-        except subprocess.TimeoutExpired:
-            logger.warning("Process did not terminate gracefully, killing.")
-            if os.name == 'posix':
-                os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
-            else:
-                self.proc.kill()
-            self.proc.wait()
+                try:
+                    self.proc.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    logger.warning("Process did not terminate gracefully, killing.")
+                    self.proc.kill()
+                    self.proc.wait()
         except Exception as e:
             logger.error(f"Error stopping process: {e}")
             if self.proc.poll() is None:
                 self.proc.kill()
                 self.proc.wait()
-
+                        
     def pause(self):
         """Pauses the subprocess (POSIX only)."""
         if self.proc and self.proc.poll() is None and os.name == 'posix':
@@ -449,6 +447,9 @@ class DownloaderCore:
 
         if not item.from_playlist:
             cmd.append("--no-playlist")
+        else:
+            # Ensure we only download the single video url while keeping playlist context
+            cmd.extend(["--yes-playlist", "--playlist-items", "1"])
 
         cmd.extend([
             "--external-downloader", ARIA2C_PATH,

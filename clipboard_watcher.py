@@ -69,5 +69,8 @@ def main():
                 last = txt
             time.sleep(CHECK_INTERVAL)
     except KeyboardInterrupt:
-        if __name__ == "__main__":
+        logger.info("Clipboard watcher stopped")
+
+
+if __name__ == "__main__":
     main()

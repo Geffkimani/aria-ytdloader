@@ -15,6 +15,7 @@ from settings import AppSettings
 from dataclasses import asdict
 
 from utils import check_dependencies, is_valid_url, notify, log_error, normalize_size_str, normalize_rate_str
+from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 from downloader_core import DownloaderCore, DownloadItem
 import database
 
@@ -210,7 +211,19 @@ class DownloaderApp(ttk.Frame):
             return
 
         if "list=" in url_to_add:
-            self._fetch_playlist_info(url_to_add, download_now)
+            resp = messagebox.askyesnocancel(
+                "Playlist detected",
+                "This video is from a playlist.\n\nYes = Download whole playlist\nNo = Download just this video\nCancel = Do nothing."
+            )
+            if resp is True:
+                self._fetch_playlist_info(url_to_add, download_now)
+                return
+            elif resp is False:
+                single_url = self._strip_playlist_params(url_to_add)
+                self._add_single_item_to_queue(single_url, download_now, from_playlist=False)
+                return
+            else:
+                return
         else:
             self._add_single_item_to_queue(url_to_add, download_now)
 
@@ -435,6 +448,15 @@ class DownloaderApp(ttk.Frame):
         except tk.TclError:
             pass
 
+    def _strip_playlist_params(self, url: str) -> str:
+        try:
+            parsed = urlparse(url)
+            query = [(k, v) for (k, v) in parse_qsl(parsed.query, keep_blank_values=True) if k.lower() not in ("list", "index", "start_radio")]
+            new_query = urlencode(query)
+            return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
+        except Exception:
+            return url
+
     def _fetch_playlist_info(self, url, download_now):
         self._set_ui_state(DISABLED)
         self.url_frame.download_now_button.config(text="Fetching...")
@@ -445,7 +467,18 @@ class DownloaderApp(ttk.Frame):
                 proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120, check=True, encoding='utf-8')
                 data = json.loads(proc.stdout)
                 entries = data.get('entries', [])
-                videos = [{'title': e.get('title', f"Video {e.get('id', '')}"), 'id': e.get('id', ''), 'url': e.get('url', f"https://www.youtube.com/watch?v={e['id']}")} for e in entries]
+                playlist_id = data.get('id') or ''
+                videos = []
+                for idx, e in enumerate(entries, start=1):
+                    vid_id = e.get('id', '')
+                    title = e.get('title', f"Video {vid_id}")
+                    if vid_id:
+                        watch_url = f"https://www.youtube.com/watch?v={vid_id}"
+                        if playlist_id:
+                            watch_url += f"&list={playlist_id}&index={idx}"
+                    else:
+                        watch_url = e.get('url', '') or ''
+                    videos.append({'title': title, 'id': vid_id, 'url': watch_url})
                 self.root.after(0, lambda: self._show_playlist_selection(videos, url, download_now))
             except (subprocess.CalledProcessError, json.JSONDecodeError, Exception) as exc:
                 log_error(exc, "Failed to fetch playlist info")
