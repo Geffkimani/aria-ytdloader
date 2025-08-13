@@ -1,4 +1,4 @@
-name: "Cross-Platform Build: AriaDownloader (Win + Mac + Linux)"
+name: "CI/CD for AriaDownloader (Lint, Test, Build, Release)"
 
 permissions:
   contents: write
@@ -9,8 +9,36 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint_test:
+    runs-on: ubuntu-latest
+    name: "Lint & Test"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest
+
+      - name: Lint and Format Check with Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Run tests with Pytest
+        run: pytest
+
   build:
+    needs: lint_test
     runs-on: ${{ matrix.os }}
+    name: "Build on ${{ matrix.os }}"
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -88,6 +116,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    name: "Create GitHub Release"
     if: github.ref == 'refs/heads/master'
 
     steps:

@@ -1,0 +1,218 @@
+2025-08-12 13:12:08,015 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-12 13:12:08,017 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-12 13:12:10,347 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-12 13:12:10,773 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-12 13:12:10,774 [INFO] Starting GUI mainloop
+2025-08-12 13:14:36,510 [INFO] History cleared
+2025-08-12 13:14:38,644 [INFO] Shutting down application
+2025-08-12 13:14:38,646 [INFO] All downloads stopped and processes cleaned up
+2025-08-12 13:14:38,798 [INFO] Requesting server shutdown
+2025-08-13 09:34:05,017 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 09:34:05,021 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 09:34:08,368 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 09:34:08,911 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 09:34:08,912 [INFO] Starting GUI mainloop
+2025-08-13 09:36:08,921 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 09:44:18,888 [INFO] Shutting down application
+2025-08-13 09:44:18,891 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 09:44:19,031 [INFO] Requesting server shutdown
+2025-08-13 09:45:36,631 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 09:45:36,632 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 09:45:37,115 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 09:45:37,493 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 09:45:37,504 [INFO] Starting GUI mainloop
+2025-08-13 09:45:44,248 [INFO] Shutting down application
+2025-08-13 09:45:44,248 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 09:45:44,376 [INFO] Requesting server shutdown
+2025-08-13 09:46:17,398 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 09:46:17,401 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 09:46:17,589 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 09:46:17,924 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 09:46:17,925 [INFO] Starting GUI mainloop
+2025-08-13 09:46:21,596 [INFO] Shutting down application
+2025-08-13 09:46:21,600 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 09:46:21,727 [INFO] Requesting server shutdown
+2025-08-13 10:39:01,923 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 10:39:01,926 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 10:39:02,632 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 10:39:02,948 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 10:39:02,948 [INFO] Starting GUI mainloop
+2025-08-13 10:39:41,794 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 10:39:41,795 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 10:39:41,982 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 10:39:42,407 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 10:39:42,408 [INFO] Starting GUI mainloop
+2025-08-13 10:40:25,225 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 10:41:37,546 [INFO] History cleared
+2025-08-13 10:41:43,596 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 10:47:55,776 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 10:47:55,795 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 10:47:59,012 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 10:48:00,154 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 10:48:00,155 [INFO] Starting GUI mainloop
+2025-08-13 10:48:55,131 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 10:59:02,538 [INFO] Shutting down application
+2025-08-13 10:59:02,905 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 10:59:03,068 [INFO] Requesting server shutdown
+2025-08-13 11:05:39,763 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:05:39,766 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 11:05:40,514 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:05:41,060 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 11:05:41,061 [INFO] Starting GUI mainloop
+2025-08-13 11:06:56,764 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 11:08:07,588 [INFO] Shutting down application
+2025-08-13 11:08:07,861 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 11:08:08,002 [INFO] Requesting server shutdown
+2025-08-13 11:26:17,237 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:26:17,239 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 11:26:19,756 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:26:20,062 [ERROR] Failed to start application
+Traceback (most recent call last):
+  File "/home/extra/projects/python/ariadownload/main.py", line 64, in main
+    app = App()
+  File "/home/extra/projects/python/ariadownload/main.py", line 39, in __init__
+    self.app_instance = DownloaderApp(self, style)
+                        ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/extra/projects/python/ariadownload/gui/main_window.py", line 40, in __init__
+    self._create_widgets()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/extra/projects/python/ariadownload/gui/main_window.py", line 110, in _create_widgets
+    self.history_frame = HistoryFrame(self, self)
+                         ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/home/extra/projects/python/ariadownload/gui/frames/history_frame.py", line 43, in __init__
+    self.history_menu.add_command(label="Open File", command=self.app.open_history_file)
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DownloaderApp' object has no attribute 'open_history_file'. Did you mean: 'copy_history_url'?
+2025-08-13 11:29:24,159 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:29:24,160 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 11:29:24,346 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:29:24,840 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 11:29:24,840 [INFO] Starting GUI mainloop
+2025-08-13 11:31:26,097 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 11:37:39,391 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:37:39,392 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 11:37:39,696 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 11:37:40,357 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 11:37:40,359 [INFO] Starting GUI mainloop
+2025-08-13 11:38:16,228 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 11:38:38,370 [INFO] Shutting down application
+2025-08-13 11:38:38,827 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 11:38:39,135 [INFO] Requesting server shutdown
+2025-08-13 13:07:59,503 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:07:59,514 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:08:00,288 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:08:00,820 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:08:00,821 [INFO] Starting GUI mainloop
+2025-08-13 13:08:55,357 [INFO] Shutting down application
+2025-08-13 13:08:55,358 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:08:55,625 [INFO] Requesting server shutdown
+2025-08-13 13:16:08,929 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:16:08,930 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:16:09,594 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:16:10,009 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:16:10,009 [INFO] Starting GUI mainloop
+2025-08-13 13:17:24,499 [ERROR] Error in Failed to fetch playlist info: Command '['/home/extra/projects/python/ariadownload/assets/yt-dlp', '--flat-playlist', '-J', 'https://youtu.be/r64_50ELf58?list=RDg_lAm3Oaz_o']' timed out after 60 seconds
+Traceback (most recent call last):
+  File "/home/extra/projects/python/ariadownload/gui/main_window.py", line 442, in fetch_thread
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60, check=True, encoding='utf-8')
+  File "/usr/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/subprocess.py", line 2129, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/home/extra/projects/python/ariadownload/assets/yt-dlp', '--flat-playlist', '-J', 'https://youtu.be/r64_50ELf58?list=RDg_lAm3Oaz_o']' timed out after 60 seconds
+
+2025-08-13 13:18:07,185 [INFO] Shutting down application
+2025-08-13 13:18:07,187 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:18:07,337 [INFO] Requesting server shutdown
+2025-08-13 13:23:39,541 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:23:39,541 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:23:39,736 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:23:40,180 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:23:40,183 [INFO] Starting GUI mainloop
+2025-08-13 13:26:22,638 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:27:20,744 [INFO] Shutting down application
+2025-08-13 13:27:21,083 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:27:21,385 [INFO] Requesting server shutdown
+2025-08-13 13:29:20,383 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:29:20,383 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:29:21,722 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:29:22,036 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:29:22,037 [INFO] Starting GUI mainloop
+2025-08-13 13:29:29,851 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:30:38,073 [INFO] Shutting down application
+2025-08-13 13:30:38,735 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:30:39,328 [INFO] Requesting server shutdown
+2025-08-13 13:36:34,915 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:36:34,915 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:36:35,105 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:36:35,524 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:36:35,525 [INFO] Starting GUI mainloop
+2025-08-13 13:36:47,300 [INFO] History cleared
+2025-08-13 13:37:01,466 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:37:56,973 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:39:15,753 [INFO] Shutting down application
+2025-08-13 13:39:16,131 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:39:16,242 [INFO] Requesting server shutdown
+2025-08-13 13:42:14,349 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:42:14,349 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:42:14,541 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:42:14,804 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:42:14,804 [INFO] Starting GUI mainloop
+2025-08-13 13:42:18,862 [INFO] History cleared
+2025-08-13 13:42:23,841 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:43:22,621 [INFO] Shutting down application
+2025-08-13 13:43:22,917 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:43:23,057 [INFO] Requesting server shutdown
+2025-08-13 13:50:41,890 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:50:41,891 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:50:42,086 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:50:42,368 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:50:42,369 [INFO] Starting GUI mainloop
+2025-08-13 13:50:52,636 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:52:59,122 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:53:00,532 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:53:00,724 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:53:05,588 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:53:05,812 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:53:06,012 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:53:11,689 [INFO] Shutting down application
+2025-08-13 13:53:11,689 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:53:11,844 [INFO] Requesting server shutdown
+2025-08-13 13:56:28,788 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:56:28,799 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:56:29,316 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:56:29,821 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:56:29,822 [INFO] Starting GUI mainloop
+2025-08-13 13:57:10,819 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:57:11,242 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:57:11,429 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:57:25,770 [INFO] Shutting down application
+2025-08-13 13:57:25,771 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 13:57:25,921 [INFO] Requesting server shutdown
+2025-08-13 13:57:25,962 [ERROR] Error in Failed to fetch playlist info: Command '['/home/extra/projects/python/ariadownload/assets/yt-dlp', '--flat-playlist', '-J', 'https://www.youtube.com/watch?v=u2ah9tWTkmk&list=RDg_lAm3Oaz_o&index=14']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/home/extra/projects/python/ariadownload/gui/main_window.py", line 445, in fetch_thread
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120, check=True, encoding='utf-8')
+  File "/usr/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/home/extra/projects/python/ariadownload/assets/yt-dlp', '--flat-playlist', '-J', 'https://www.youtube.com/watch?v=u2ah9tWTkmk&list=RDg_lAm3Oaz_o&index=14']' returned non-zero exit status 1.
+
+2025-08-13 13:57:45,308 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:57:45,309 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 13:57:45,507 [INFO] Database initialized at /home/extra/projects/python/ariadownload/ariadownloader.db
+2025-08-13 13:57:45,812 [INFO] Starting uvicorn server at 127.0.0.1:5000
+2025-08-13 13:57:45,813 [INFO] Starting GUI mainloop
+2025-08-13 13:58:29,915 [INFO] Dependencies found: yt-dlp=/home/extra/projects/python/ariadownload/assets/yt-dlp aria2c=/home/extra/projects/python/ariadownload/assets/aria2c
+2025-08-13 14:00:46,990 [INFO] Shutting down application
+2025-08-13 14:00:47,268 [INFO] All downloads stopped and processes cleaned up
+2025-08-13 14:00:47,480 [INFO] Requesting server shutdown
